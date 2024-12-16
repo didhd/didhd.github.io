@@ -1,570 +1,867 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>텍사스 홀덤 싱글 플레이 연습</title>
     <style>
         body {
-            font-family: sans-serif;
+            font-family: 'Noto Sans KR', sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f0f0f0;
+            background: linear-gradient(135deg, #2c3e50, #bdc3c7);
             display: flex;
             flex-direction: column;
             align-items: center;
+            color: #333;
         }
-        .container{
-            width: 90%;
+
+        .container {
+            width: 95%;
             max-width: 1200px;
         }
-        .game-area {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+        h1 {
+            text-align: center;
+            color: #fff;
             margin-bottom: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-area {
             position: relative;
-            min-height: 600px;
+            background-color: #ffffffcc;
+            backdrop-filter: blur(5px);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 700px;
+            margin-bottom: 20px;
         }
-        .opponent-area, .player-area {
+
+        .opponent-area,
+        .player-area {
             display: flex;
             flex-direction: column;
             align-items: center;
         }
+
         .opponent-area {
             order: 1;
             margin-bottom: 20px;
         }
+
         .player-area {
             order: 3;
-            margin-top: 20px;
+            margin-top: 30px;
         }
+
         .community-cards {
             order: 2;
-            margin-bottom: 20px;
             display: flex;
+            margin: 20px 0;
             transition: all 0.5s ease-in-out;
         }
-        .player-cards, .opponent-cards, .community-cards {
+
+        .player-cards,
+        .opponent-cards,
+        .community-cards {
             display: flex;
-            margin-bottom: 10px;
         }
+
         .card {
             width: 60px;
             height: 80px;
             border-radius: 5px;
-            background-color: #ddd;
+            background-color: #eee;
             margin: 0 5px;
-            display: inline-block;
-            text-align: center;
-            line-height: 80px;
-            font-size: 1.5em;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2em;
             font-weight: bold;
             color: #333;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.4s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transition: transform 0.4s, background-color 0.4s, box-shadow 0.4s;
         }
+
         .card:hover {
-            transform: scale(1.05);
+            transform: scale(1.1);
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
+
+        .card.red {
+            color: #c0392b;
+        }
+
+        .card.black {
+            color: #2c3e50;
+        }
+
         .card.back {
-            background-color: #999;
-            color: #fff;
+            background: linear-gradient(45deg, #999, #666);
+            color: transparent;
             font-size: 2em;
-            line-height: 70px;
         }
+
         .card.back::before {
-            content: "?";
+            content: "◆";
+            color: #fff;
+        }
+
+        .chips-info {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .chips-info .tooltip {
+            position: relative;
+            cursor: help;
+            margin-left: 5px;
+        }
+
+        .chips-info .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 180px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 6px;
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.9em;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .chips-info .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
         }
 
         .action-buttons {
-            margin-bottom: 20px;
+            margin: 20px 0;
             position: relative;
         }
+
         .action-buttons button {
-            padding: 10px 20px;
+            padding: 10px 15px;
             margin: 0 5px;
             border: none;
-            background-color: #5cb85c;
+            background: #27ae60;
             color: white;
             border-radius: 5px;
             cursor: pointer;
             position: relative;
+            font-size: 1em;
+            transition: background 0.3s;
         }
+
         .action-buttons button:hover {
-            background-color: #4cae4c;
+            background: #1e8449;
         }
 
-        .pot {
-            font-size: 1.2em;
-            margin-bottom: 20px;
+        .action-buttons button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
-        .message-area {
-            min-height: 30px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .rules-area{
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        /* 툴팁 */
         .action-tooltip {
             visibility: hidden;
             opacity: 0;
-            background-color: #555;
+            background-color: #333;
             color: #fff;
             text-align: center;
             border-radius: 6px;
             padding: 5px;
             position: absolute;
-            bottom: 125%;
+            bottom: 140%;
             left: 50%;
             transform: translateX(-50%);
-            width: 120px;
+            width: 150px;
             transition: opacity 0.3s;
             font-size: 0.9em;
             z-index: 2;
+            line-height: 1.4em;
         }
+
         .action-buttons button:hover .action-tooltip {
             visibility: visible;
             opacity: 1;
         }
 
-        /* 단계 표시 */
+        .pot,
+        .message-area {
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+
         .stage-indicator {
             position: absolute;
             top: -20px;
             left: 50%;
             transform: translateX(-50%);
             font-size: 1.2em;
-            color: #333;
+            font-weight: bold;
             background: #fff;
             padding: 5px 10px;
             border-radius: 5px;
-            font-weight: bold;
-        }
-
-        /* 초보자 툴팁 */
-        .tooltip {
-            position: relative;
-            display: inline-block;
+            color: #2c3e50;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             cursor: help;
         }
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 200px;
-            background-color: #555;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 5px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -100px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size:0.9em;
+
+        .stage-indicator:hover {
+            background: #f9f9f9;
         }
-        .tooltip:hover .tooltiptext {
+
+        .stage-indicator .stage-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            background-color: #333;
+            color: #fff;
+            padding: 6px;
+            border-radius: 6px;
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 180px;
+            font-size: 0.9em;
+            text-align: center;
+            transition: opacity 0.3s;
+            line-height: 1.4em;
+        }
+
+        .stage-indicator:hover .stage-tooltip {
             visibility: visible;
             opacity: 1;
         }
+
+        .rules-area {
+            background-color: #ffffffdd;
+            backdrop-filter: blur(3px);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .rules-area h2 {
+            margin-top: 0;
+        }
+
+        .tooltiptext {
+            line-height: 1.4em;
+        }
+
+        .genie-advice {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            background: #f7f7f7aa;
+            backdrop-filter: blur(3px);
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+            max-width: 200px;
+            font-size: 0.9em;
+        }
+
+        .genie-advice h3 {
+            margin: 0 0 5px 0;
+            font-size: 1em;
+            text-align: center;
+        }
+
+        .fade-in {
+            opacity: 0;
+            animation: fadein 0.8s forwards;
+        }
+
+        @keyframes fadein {
+            to {
+                opacity: 1;
+            }
+        }
     </style>
 </head>
+
 <body>
-<div class="container">
-    <h1>텍사스 홀덤 싱글 플레이 연습</h1>
+    <div class="container">
+        <h1>텍사스 홀덤 싱글 플레이 연습</h1>
+        <div class="game-area">
+            <div class="stage-indicator" id="stage-indicator">
+                프리플랍
+                <div class="stage-tooltip" id="stage-tooltip">
+                    <strong>현재 라운드: 프리플랍</strong><br>
+                    홀카드 2장 배분 후 첫 베팅 단계.<br>
+                    모두 콜하거나 체크하면 다음 단계로 진행합니다.
+                </div>
+            </div>
+            <div class="genie-advice" id="genie">
+                <h3>지니의 조언</h3>
+                <div id="genie-message">게임 시작</div>
+            </div>
 
-    <div class="game-area">
-        <div class="stage-indicator" id="stage-indicator">프리플랍</div>
-        <div class="opponent-area">
-            <h2>상대</h2>
-            <div class="opponent-cards" id="opponent-cards">
-                <div class="card back"></div>
-                <div class="card back"></div>
+            <div class="opponent-area">
+                <div class="chips-info">
+                    상대 칩: <span id="opponent-stack">1000</span>
+                    <span class="tooltip">💰
+                        <span class="tooltiptext">상대방 현재 칩 수량</span>
+                    </span>
+                </div>
+                <h2>상대(딜러)</h2>
+                <div class="opponent-cards" id="opponent-cards"></div>
+            </div>
+            <div class="community-cards" id="community-cards"></div>
+            <div class="player-area">
+                <div class="chips-info">
+                    내 칩: <span id="player-stack">1000</span>
+                    <span class="tooltip">💰
+                        <span class="tooltiptext">내가 보유한 칩 수량</span>
+                    </span>
+                </div>
+                <h2>플레이어</h2>
+                <div class="player-cards" id="player-cards"></div>
+                <div class="action-buttons">
+                    <button onclick="playerCheck()">체크
+                        <div class="action-tooltip">추가 베팅 없이 넘깁니다.<br>양측 체크 시 다음 단계로 진행.</div>
+                    </button>
+                    <button onclick="playerBet()">베팅
+                        <div class="action-tooltip">현재 베팅이 없는 상태에서<br>처음으로 베팅을 시작합니다.</div>
+                    </button>
+                    <button onclick="playerCall()">콜
+                        <div class="action-tooltip">상대가 베팅한 금액에 맞추어<br>내 칩을 냅니다.</div>
+                    </button>
+                    <button onclick="playerRaise()">레이즈
+                        <div class="action-tooltip">상대 베팅 금액보다 더 큰<br>금액을 베팅합니다.</div>
+                    </button>
+                    <button onclick="playerFold()">폴드
+                        <div class="action-tooltip">패를 포기하고 이번 판에서<br>기권합니다.</div>
+                    </button>
+                </div>
+                <div class="pot" id="pot-amount">팟: 0</div>
+                <div class="message-area" id="message-area"></div>
             </div>
         </div>
-        <div class="community-cards" id="community-cards"></div>
-        <div class="player-area">
-            <h2>플레이어</h2>
-            <div class="player-cards" id="player-cards">
-                <div class="card back"></div>
-                <div class="card back"></div>
-            </div>
-            <div class="action-buttons">
-                <button onclick="check()">체크
-                    <div class="action-tooltip">추가 베팅 없이 턴을 넘깁니다.</div>
-                </button>
-                <button onclick="bet()">벳
-                    <div class="action-tooltip">베팅을 시작합니다.</div>
-                </button>
-                <button onclick="call()">콜
-                    <div class="action-tooltip">상대 베팅에 맞춥니다.</div>
-                </button>
-                <button onclick="raise()">레이즈
-                    <div class="action-tooltip">상대보다 더 높게 베팅합니다.</div>
-                </button>
-                <button onclick="fold()">폴드
-                    <div class="action-tooltip">패를 포기하고 게임에서 빠집니다.</div>
-                </button>
-            </div>
-            <div class="pot" id="pot-amount">팟: 0</div>
-            <div class="message-area" id="message-area"></div>
+
+        <div class="rules-area fade-in">
+            <h2>게임 진행 & 베팅 라운드</h2>
+            <p><strong>헤즈업 텍사스 홀덤</strong>: 2인 플레이. 스몰블라인드(SB) 5칩, 빅블라인드(BB) 10칩을 게시 후 시작.</p>
+            <p>진행 순서:</p>
+            <ul>
+                <li><strong>프리플랍</strong>: 홀카드 2장 후 첫 베팅</li>
+                <li><strong>플랍</strong>: 커뮤니티 카드 3장 공개 후 베팅</li>
+                <li><strong>턴</strong>: 커뮤니티 카드 4번째 장 공개 후 베팅</li>
+                <li><strong>리버</strong>: 커뮤니티 카드 5번째 장 공개 후 베팅</li>
+                <li><strong>쇼다운</strong>: 모든 베팅 끝나면 패 비교</li>
+            </ul>
+            <p>각 단계에서 콜/체크로 베팅 균형이 맞으면 다음 단계로 진행합니다.</p>
+            <h2>용어</h2>
+            <ul>
+                <li>체크: 추가 베팅 없이 턴 넘기기</li>
+                <li>베팅: 베팅이 없는 상태에서 새로 베팅 시작</li>
+                <li>콜: 상대 베팅 액수에 맞추기</li>
+                <li>레이즈: 상대보다 더 큰 금액 베팅</li>
+                <li>폴드: 패 포기</li>
+            </ul>
+            <h2>족보(높은순)</h2>
+            <ul>
+                <li>로열 스트레이트 플러쉬</li>
+                <li>스트레이트 플러쉬</li>
+                <li>포카드</li>
+                <li>풀하우스</li>
+                <li>플러쉬</li>
+                <li>스트레이트</li>
+                <li>트리플</li>
+                <li>투페어</li>
+                <li>원페어</li>
+                <li>하이카드</li>
+            </ul>
         </div>
     </div>
 
-    <div class="rules-area">
-        <h2>기본 규칙</h2>
-        <p>
-            텍사스 홀덤은 각 플레이어가 2장의 개인 카드(<span class="tooltip">홀 카드<span class="tooltiptext">각 플레이어에게 비공개로 주어지는 2장의 카드</span></span>)를 받고, 테이블에 공개되는 5장의 공통 카드(<span class="tooltip">커뮤니티 카드<span class="tooltiptext">모든 플레이어가 공유하는 5장의 공개 카드</span></span>)를 이용해 가장 높은 족보를 만듭니다.
-        </p>
-        <p>게임 진행 순서: 프리플랍 → 플랍 → 턴 → 리버 → 쇼다운</p>
-        <ul>
-            <li class="tooltip">체크<span class="tooltiptext">추가 베팅 없이 턴을 넘김</span></li>
-            <li class="tooltip">벳<span class="tooltiptext">처음으로 베팅 시작</span></li>
-            <li class="tooltip">콜<span class="tooltiptext">상대 베팅에 맞추어 베팅</span></li>
-            <li class="tooltip">레이즈<span class="tooltiptext">상대 베팅보다 높게 베팅</span></li>
-            <li class="tooltip">폴드<span class="tooltiptext">패를 포기</span></li>
-        </ul>
-        <h2>족보 (높은 순)</h2>
-        <ul>
-            <li>로열 스트레이트 플러쉬</li>
-            <li>스트레이트 플러쉬</li>
-            <li>포카드</li>
-            <li>풀하우스</li>
-            <li>플러쉬</li>
-            <li>스트레이트</li>
-            <li>트리플</li>
-            <li>투페어</li>
-            <li>원페어</li>
-            <li>하이카드</li>
-        </ul>
-    </div>
-</div>
+    <script>
+        let deck = [];
+        const suits = ["C", "D", "H", "S"];
+        const values = ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"];
 
-<script>
-    let deck = [];
-    const suits = ["C", "D", "H", "S"];
-    const values = ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"];
-    let playerCards = [];
-    let opponentCards = [];
-    let communityCards = [];
-    let pot = 0;
-    let betAmount = 10;
-    let gameStage = 'preflop';
-    let gameOver = false;
-    let playerActioned = false;
+        let playerStack = 1000;
+        let opponentStack = 1000;
+        let pot = 0;
+        let playerCards = [];
+        let opponentCards = [];
+        let communityCards = [];
+        let gameStage = 'preflop';
+        let gameOver = false;
 
-    function createDeck() {
-        deck = [];
-        for (let suit of suits) {
-            for (let value of values) {
-                deck.push(value + suit);
+        let currentBet = 0;
+        let playerContribution = 0;
+        let opponentContribution = 0;
+
+        let smallBlind = 5;
+        let bigBlind = 10;
+
+        function createDeck() {
+            deck = [];
+            for (let s of suits) {
+                for (let v of values) {
+                    deck.push(v + s);
+                }
             }
         }
-    }
 
-    function shuffleDeck() {
-        for (let i = deck.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [deck[i], deck[j]] = [deck[j], deck[i]];
+        function shuffleDeck() {
+            for (let i = deck.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
         }
-    }
 
-    function dealCards() {
-        playerCards = [deck.pop(), deck.pop()];
-        opponentCards = [deck.pop(), deck.pop()];
-        communityCards = [];
-        playerActioned = false;
-        updatePlayerCardsDisplay();
-        updateOpponentCardsDisplay();
-        updateCommunityCardsDisplay();
-        updatePotDisplay();
-    }
+        // 전환 중 버튼 누르지 않도록 제어
+        function disableAllButtons() {
+            const buttons = document.querySelectorAll('.action-buttons button');
+            buttons.forEach(b => b.disabled = true);
+        }
+        function enableAllButtons() {
+            const buttons = document.querySelectorAll('.action-buttons button');
+            buttons.forEach(b => b.disabled = false);
+        }
 
-    function updatePlayerCardsDisplay() {
-        const playerCardsDiv = document.getElementById('player-cards');
-        playerCardsDiv.innerHTML = '';
-        playerCards.forEach(card => {
-            const cardDiv = document.createElement('div');
-            cardDiv.classList.add('card');
-            cardDiv.textContent = card;
-            playerCardsDiv.appendChild(cardDiv);
-        });
-    }
+        function startGame() {
+            gameOver = false;
+            communityCards = [];
+            currentBet = 0;
+            playerContribution = 0;
+            opponentContribution = 0;
+            gameStage = 'preflop';
 
-    function updateOpponentCardsDisplay() {
-        const opponentCardsDiv = document.getElementById('opponent-cards');
-        opponentCardsDiv.innerHTML = '';
-        if (gameOver){
-            opponentCards.forEach(card => {
-                const cardDiv = document.createElement('div');
-                cardDiv.classList.add('card');
-                cardDiv.textContent = card;
-                opponentCardsDiv.appendChild(cardDiv);
+            playerStack = 1000;
+            opponentStack = 1000;
+
+            // 블라인드
+            playerStack -= smallBlind;
+            opponentStack -= bigBlind;
+            pot = smallBlind + bigBlind;
+            currentBet = bigBlind;
+
+            createDeck();
+            shuffleDeck();
+            dealHoleCards();
+            enableAllButtons();
+            updateAllDisplays();
+            setMessage("새 게임 시작! SB:5, BB:10");
+            updateGenieMessage();
+        }
+
+        function dealHoleCards() {
+            playerCards = [deck.pop(), deck.pop()];
+            opponentCards = [deck.pop(), deck.pop()];
+        }
+
+        function updateAllDisplays() {
+            updateStageIndicator();
+            updatePlayerCardsDisplay();
+            updateOpponentCardsDisplay();
+            updateCommunityCardsDisplay();
+            updatePotDisplay();
+            updateStacksDisplay();
+            updateGenieMessage();
+        }
+
+        function updateStacksDisplay() {
+            document.getElementById('player-stack').textContent = playerStack;
+            document.getElementById('opponent-stack').textContent = opponentStack;
+        }
+
+        function cardToDisplay(card) {
+            const rankMap = { 'T': '10', 'J': 'J', 'Q': 'Q', 'K': 'K', 'A': 'A' };
+            let rank = card[0];
+            if (rankMap[rank]) rank = rankMap[rank];
+            let suit = card[1];
+            let suitChar, colorClass;
+            switch (suit) {
+                case 'C': suitChar = '♣'; colorClass = 'black'; break;
+                case 'D': suitChar = '♦'; colorClass = 'red'; break;
+                case 'H': suitChar = '♥'; colorClass = 'red'; break;
+                case 'S': suitChar = '♠'; colorClass = 'black'; break;
+            }
+            return { text: rank + suitChar, color: colorClass };
+        }
+
+        function updatePlayerCardsDisplay() {
+            const pc = document.getElementById('player-cards');
+            if (!pc) return;
+            pc.innerHTML = '';
+            playerCards.forEach(card => {
+                const { text, color } = cardToDisplay(card);
+                let cardDiv = document.createElement('div');
+                cardDiv.classList.add('card', color);
+                cardDiv.textContent = text;
+                pc.appendChild(cardDiv);
             });
-        }else{
-            opponentCardsDiv.innerHTML = `
-                <div class="card back"></div>
-                <div class="card back"></div>`;
-        }
-    }
-
-    function updateCommunityCardsDisplay() {
-        const communityCardsDiv = document.getElementById('community-cards');
-        communityCardsDiv.innerHTML = '';
-        // 커뮤니티 카드가 깔릴 때 애니메이션을 위해 딜레이 적용
-        communityCards.forEach((card, index) => {
-            setTimeout(()=> {
-                const cardDiv = document.createElement('div');
-                cardDiv.classList.add('card');
-                cardDiv.textContent = card;
-                communityCardsDiv.appendChild(cardDiv);
-            }, index * 300);
-        });
-        // 남은 카드 자리를 빈칸으로
-        setTimeout(()=>{
-            while(communityCardsDiv.children.length < 5) {
-                const cardDiv = document.createElement('div');
-                cardDiv.classList.add('card');
-                communityCardsDiv.appendChild(cardDiv);
-            }
-        }, communityCards.length * 300);
-    }
-
-    function updatePotDisplay() {
-        document.getElementById('pot-amount').textContent = `팟: ${pot}`;
-    }
-
-    function updateStageIndicator() {
-        const stageIndicator = document.getElementById('stage-indicator');
-        switch(gameStage) {
-            case 'preflop': stageIndicator.textContent = '프리플랍'; break;
-            case 'flop': stageIndicator.textContent = '플랍'; break;
-            case 'turn': stageIndicator.textContent = '턴'; break;
-            case 'river': stageIndicator.textContent = '리버'; break;
-            default: stageIndicator.textContent = '';
-        }
-    }
-
-    function setMessage(message) {
-        document.getElementById('message-area').textContent = message;
-    }
-
-    function check() {
-        if(playerActioned){
-            setMessage('이미 액션을 했습니다');
-            return;
-        }
-        setMessage('체크했습니다.');
-        playerActioned = true;
-        setTimeout(()=>{
-            opponentAction();
-            if (!gameOver) {
-                nextStage();
-            }
-        }, 700);
-    }
-
-    function bet() {
-        if(playerActioned){
-            setMessage('이미 액션을 했습니다');
-            return;
-        }
-        pot += betAmount;
-        updatePotDisplay();
-        setMessage(`베팅 ${betAmount} 칩`);
-        playerActioned = true;
-        setTimeout(()=>{
-            opponentAction();
-            if (!gameOver){
-                nextStage();
-            }
-        }, 700);
-    }
-
-    function call() {
-        if(playerActioned){
-            setMessage('이미 액션을 했습니다');
-            return;
-        }
-        pot += betAmount;
-        updatePotDisplay();
-        setMessage(`콜 ${betAmount} 칩`);
-        playerActioned = true;
-        setTimeout(()=>{
-            opponentAction();
-            if (!gameOver){
-                nextStage();
-            }
-        },700);
-    }
-
-    function raise() {
-        if(playerActioned){
-            setMessage('이미 액션을 했습니다');
-            return;
-        }
-        pot += betAmount * 2;
-        updatePotDisplay();
-        setMessage(`레이즈 ${betAmount * 2} 칩`);
-        playerActioned = true;
-        setTimeout(()=>{
-            opponentAction();
-            if (!gameOver){
-                nextStage();
-            }
-        },700);
-    }
-
-    function fold() {
-        setMessage('폴드했습니다. 상대방 승리!');
-        gameOver = true;
-        playerCards = [];
-        communityCards = [];
-        gameStage = 'preflop';
-        updateOpponentCardsDisplay();
-        setTimeout(startGame, 3000);
-    }
-
-    function opponentAction() {
-        if(gameOver) return;
-        // 스테이지별로 상대의 액션 패턴 약간 변경
-        let randomNumber = Math.random();
-        if (gameStage === 'preflop') {
-            randomNumber += 0.1; 
         }
 
-        if (randomNumber < 0.05) {
-            setMessage('상대방 폴드');
-            gameOver = true;
-            determineWinner();
-            return;
-        } else if (randomNumber < 0.5) {
-            setMessage('상대방 체크');
-        } else if(randomNumber < 0.75) {
-            pot += betAmount;
-            updatePotDisplay();
-            setMessage('상대방 콜');
-        } else {
-            pot += betAmount * 2;
-            updatePotDisplay();
-            setMessage('상대방 레이즈');
-        }
-    }
-
-    function nextStage() {
-        if (gameStage === 'preflop') {
-            // 플랍: 커뮤니티 카드 3장
-            communityCards = [deck.pop(), deck.pop(), deck.pop()];
-            gameStage = 'flop';
-        } else if (gameStage === 'flop') {
-            // 턴: 커뮤니티 카드 1장 추가
-            communityCards.push(deck.pop());
-            gameStage = 'turn';
-        } else if (gameStage === 'turn') {
-            // 리버: 커뮤니티 카드 1장 추가
-            communityCards.push(deck.pop());
-            gameStage = 'river';
-        } else if (gameStage === 'river') {
-            // 쇼다운
-            gameOver = true;
-            determineWinner();
-            return;
-        }
-
-        updateCommunityCardsDisplay();
-        updateOpponentCardsDisplay();
-        updateStageIndicator();
-        playerActioned = false;
-    }
-
-    function evaluateHand(cards) {
-        // 간단한 평가 로직(원본의 평가 함수 그대로 사용)
-        const sortedCards = cards.slice().sort((a, b) => {
-            const valueA = values.indexOf(a[0]);
-            const valueB = values.indexOf(b[0]);
-            return valueA - valueB;
-        });
-        const cardValues = sortedCards.map(card => values.indexOf(card[0]));
-        const cardSuits = sortedCards.map(card => card[1]);
-        const isFlush = cardSuits.every((suit, _, arr) => suit === arr[0]);
-        const isStraight = cardValues.every((value, i) => i === 0 || value === cardValues[i - 1] + 1);
-        const isRoyal = isStraight && cardValues[0] === 8;
-        const valueCounts = {};
-        cardValues.forEach(value => {
-            valueCounts[value] = (valueCounts[value] || 0) + 1;
-        });
-        const counts = Object.values(valueCounts);
-        const maxCount = Math.max(...counts);
-
-        if (isRoyal && isFlush) return {rank: 9, highCard: 0};
-        if (isStraight && isFlush) return {rank: 8, highCard: cardValues[4]};
-        if (maxCount === 4) return {rank: 7, highCard: cardValues.find(v => valueCounts[v]===4)};
-        if (counts.includes(3) && counts.includes(2)) return {rank: 6, highCard: cardValues.find(v => valueCounts[v]===3)};
-        if (isFlush) return {rank: 5, highCard: cardValues[4]};
-        if (isStraight) return {rank: 4, highCard: cardValues[4]};
-        if (maxCount === 3) return {rank: 3, highCard: cardValues.find(v => valueCounts[v]===3)};
-        if (counts.filter(c => c===2).length === 2) {
-            const pairValues = cardValues.filter(v => valueCounts[v]===2);
-            return {rank: 2, highCard: Math.max(...pairValues)};
-        }
-        if (maxCount === 2) return {rank: 1, highCard: cardValues.find(v => valueCounts[v]===2)};
-        return {rank: 0, highCard: cardValues[4]};
-    }
-
-    function determineWinner() {
-        if (!gameOver) return;
-        const playerHand = playerCards.concat(communityCards);
-        const opponentHand = opponentCards.concat(communityCards);
-        const playerRank = evaluateHand(playerHand);
-        const opponentRank = evaluateHand(opponentHand);
-        let result = '';
-        if (playerRank.rank > opponentRank.rank) {
-            result = '플레이어 승리!';
-        } else if (playerRank.rank < opponentRank.rank) {
-            result = '상대방 승리!';
-        } else {
-            if(playerRank.highCard > opponentRank.highCard){
-                result = '플레이어 승리!';
-            } else if(playerRank.highCard < opponentRank.highCard){
-                result = '상대방 승리!';
+        function updateOpponentCardsDisplay() {
+            const oc = document.getElementById('opponent-cards');
+            if (!oc) return;
+            oc.innerHTML = '';
+            if (gameOver || gameStage === 'showdown') {
+                opponentCards.forEach(card => {
+                    const { text, color } = cardToDisplay(card);
+                    const cardDiv = document.createElement('div');
+                    cardDiv.classList.add('card', color);
+                    cardDiv.textContent = text;
+                    oc.appendChild(cardDiv);
+                });
             } else {
-                result = '무승부!';
+                oc.innerHTML = `<div class="card back"></div><div class="card back"></div>`;
             }
         }
-        setMessage(result);
-        updateOpponentCardsDisplay();
-        setTimeout(startGame, 3000);
-    }
 
-    function startGame() {
-        createDeck();
-        shuffleDeck();
-        dealCards();
-        // 간단한 블라인드 설정 (예: SB: 5, BB: 10)
-        pot = 0;
-        pot += 15; 
-        setMessage('새 게임 시작! (SB:5, BB:10)');
-        gameStage = 'preflop';
-        gameOver = false;
-        updatePotDisplay();
-        updateStageIndicator();
-    }
+        function updateCommunityCardsDisplay() {
+            const cc = document.getElementById('community-cards');
+            if (!cc) return;
+            cc.innerHTML = '';
+            communityCards.forEach(card => {
+                const { text, color } = cardToDisplay(card);
+                const cardDiv = document.createElement('div');
+                cardDiv.classList.add('card', color);
+                cardDiv.textContent = text;
+                cc.appendChild(cardDiv);
+            });
+            while (cc.childElementCount < 5) {
+                const emptyCard = document.createElement('div');
+                emptyCard.classList.add('card', 'back');
+                emptyCard.textContent = '';
+                cc.appendChild(emptyCard);
+            }
+        }
 
-    startGame();
-</script>
+        function updatePotDisplay() {
+            const potElem = document.getElementById('pot-amount');
+            if (!potElem) return;
+            potElem.textContent = `팟: ${pot}`;
+        }
+
+        function updateStageIndicator() {
+            const si = document.getElementById('stage-indicator');
+            const stt = document.getElementById('stage-tooltip');
+            if (!si || !stt) return; // 요소 없으면 안전 종료
+
+            let desc = '';
+            switch (gameStage) {
+                case 'preflop':
+                    si.textContent = '프리플랍';
+                    desc = '홀카드 2장 배분 후 첫 베팅 단계.<br>모두 콜/체크 시 플랍 진행.';
+                    break;
+                case 'flop':
+                    si.textContent = '플랍';
+                    desc = '커뮤니티 카드 3장 공개 후 베팅.<br>콜/체크로 균형 맞추면 턴으로.';
+                    break;
+                case 'turn':
+                    si.textContent = '턴';
+                    desc = '4번째 카드 공개 후 베팅.<br>콜/체크로 균형 맞추면 리버로.';
+                    break;
+                case 'river':
+                    si.textContent = '리버';
+                    desc = '5번째 카드 공개 후 베팅.<br>마지막 베팅 후 쇼다운 진행.';
+                    break;
+                case 'showdown':
+                    si.textContent = '쇼다운';
+                    desc = '베팅 종료 후 패 공개, 승자 결정.';
+                    break;
+                default:
+                    si.textContent = '';
+            }
+            stt.innerHTML = '<strong>현재 라운드: ' + si.textContent + '</strong><br>' + desc;
+        }
+
+        function setMessage(msg) {
+            const msgArea = document.getElementById('message-area');
+            if (!msgArea) return;
+            msgArea.textContent = msg;
+        }
+
+        function updateGenieMessage() {
+            const genie = document.getElementById('genie-message');
+            if (!genie) return;
+            if (gameOver) {
+                genie.textContent = '라운드 종료. 곧 새 게임 시작';
+                return;
+            }
+            let callAmount = currentBet - playerContribution;
+            if (callAmount > 0) {
+                genie.textContent = `상대 베팅 ${callAmount}칩. 콜해서 맞추거나 레이즈/폴드 할 수 있어요.`;
+            } else {
+                genie.textContent = `추가 베팅 없음. 체크하거나 베팅/레이즈를 시도할 수 있습니다.`;
+            }
+        }
+
+        function playerFold() {
+            if (gameOver) return;
+            setMessage('폴드! 상대 승리');
+            opponentStack += pot;
+            endHand();
+        }
+
+        function playerCheck() {
+            if (gameOver) return;
+            let callAmount = currentBet - playerContribution;
+            if (callAmount > 0) {
+                setMessage('체크 불가! 콜 또는 폴드해야 합니다.');
+                return;
+            }
+            setMessage('체크');
+            updateAllDisplays();
+            opponentAction('check');
+        }
+
+        function playerBet() {
+            if (gameOver) return;
+            let callAmount = currentBet - playerContribution;
+            if (callAmount > 0) {
+                setMessage('콜/폴드/레이즈 해야합니다. 베팅 불가.');
+                return;
+            }
+            let betSize = 20;
+            if (playerStack < betSize) betSize = playerStack;
+            playerStack -= betSize;
+            playerContribution += betSize;
+            pot += betSize;
+            currentBet = playerContribution;
+            setMessage(`베팅 ${betSize}칩`);
+            updateAllDisplays();
+            opponentAction('bet', betSize);
+        }
+
+        function playerCall() {
+            if (gameOver) return;
+            let callAmount = currentBet - playerContribution;
+            if (callAmount <= 0) {
+                setMessage('콜할 베팅이 없습니다.');
+                return;
+            }
+            if (playerStack < callAmount) callAmount = playerStack;
+            playerStack -= callAmount;
+            playerContribution += callAmount;
+            pot += callAmount;
+            setMessage(`콜 ${callAmount}칩`);
+            updateAllDisplays();
+            checkRoundEndOrOpponentAction('call');
+        }
+
+        function playerRaise() {
+            if (gameOver) return;
+            let callAmount = currentBet - playerContribution;
+            if (playerStack <= callAmount) {
+                setMessage('레이즈 불가. 칩 부족');
+                return;
+            }
+            let raiseExtra = 20;
+            let totalRaise = callAmount + raiseExtra;
+            if (playerStack < totalRaise) totalRaise = playerStack;
+            playerStack -= totalRaise;
+            playerContribution += totalRaise;
+            pot += totalRaise;
+            currentBet = playerContribution;
+            setMessage(`레이즈 총 ${totalRaise}칩`);
+            updateAllDisplays();
+            opponentAction('raise', totalRaise - callAmount);
+        }
+
+        function checkRoundEndOrOpponentAction(playerMove) {
+            if (playerContribution === opponentContribution) {
+                endBettingRound();
+            } else {
+                opponentAction(playerMove);
+            }
+        }
+
+        function opponentAction(playerMove, amount = 0) {
+            if (gameOver) return;
+            setTimeout(() => {
+                let actionRand = Math.random();
+
+                if (playerMove === 'check') {
+                    if (actionRand < 0.5) {
+                        setMessage('상대 체크');
+                        opponentCheck();
+                    } else {
+                        opponentBet(20);
+                    }
+                } else if (playerMove === 'bet' || playerMove === 'raise') {
+                    // 상대 콜/폴드
+                    if (actionRand < 0.5) {
+                        opponentCall();
+                    } else {
+                        setMessage('상대 폴드! 플레이어 승리');
+                        playerStack += pot;
+                        endHand();
+                    }
+                } else if (playerMove === 'call') {
+                    if (actionRand < 0.5) {
+                        setMessage('상대 체크');
+                        opponentCheck();
+                    } else {
+                        opponentBet(20);
+                    }
+                }
+            }, 1000);
+        }
+
+        function opponentCheck() {
+            if (playerContribution === opponentContribution) {
+                endBettingRound();
+            } else {
+                endBettingRound();
+            }
+        }
+
+        function opponentBet(betSize) {
+            if (opponentStack < betSize) betSize = opponentStack;
+            opponentStack -= betSize;
+            opponentContribution += betSize;
+            pot += betSize;
+            currentBet = opponentContribution;
+            setMessage(`상대 베팅 ${betSize}칩`);
+            updateAllDisplays();
+        }
+
+        function opponentCall() {
+            let callAmount = currentBet - opponentContribution;
+            if (opponentStack < callAmount) callAmount = opponentStack;
+            opponentStack -= callAmount;
+            opponentContribution += callAmount;
+            pot += callAmount;
+            setMessage(`상대 콜 ${callAmount}칩`);
+            updateAllDisplays();
+            endBettingRound();
+        }
+
+        function endBettingRound() {
+            if (gameOver) return;
+            currentBet = 0;
+            playerContribution = 0;
+            opponentContribution = 0;
+
+            if (gameStage === 'preflop') {
+                communityCards = [deck.pop(), deck.pop(), deck.pop()];
+                gameStage = 'flop';
+                setMessage('플랍 공개');
+            } else if (gameStage === 'flop') {
+                communityCards.push(deck.pop());
+                gameStage = 'turn';
+                setMessage('턴 카드 공개');
+            } else if (gameStage === 'turn') {
+                communityCards.push(deck.pop());
+                gameStage = 'river';
+                setMessage('리버 카드 공개');
+            } else if (gameStage === 'river') {
+                showDown();
+                return;
+            }
+            updateAllDisplays();
+        }
+
+        function showDown() {
+            gameStage = 'showdown';
+            updateAllDisplays();
+            const winner = determineWinner();
+            if (winner === 'player') {
+                setMessage('쇼다운! 플레이어 승!');
+                playerStack += pot;
+            } else if (winner === 'opponent') {
+                setMessage('쇼다운! 상대 승!');
+                opponentStack += pot;
+            } else {
+                setMessage('쇼다운! 무승부! 팟 나누기');
+                playerStack += pot / 2;
+                opponentStack += pot / 2;
+            }
+            endHand();
+        }
+
+        function endHand() {
+            gameOver = true;
+            updateAllDisplays();
+            disableAllButtons();
+            setTimeout(() => {
+                if (playerStack <= 0 || opponentStack <= 0) {
+                    if (playerStack <= 0) setMessage('내 칩 소진! 게임 종료!');
+                    else setMessage('상대 칩 소진! 당신 승리!');
+                } else {
+                    pot = 0;
+                    startGame();
+                }
+            }, 3000);
+        }
+
+        function evaluateHand(cards) {
+            const sortedCards = cards.slice().sort((a, b) => {
+                const va = values.indexOf(a[0]);
+                const vb = values.indexOf(b[0]);
+                return va - vb;
+            });
+            const cardValues = sortedCards.map(c => values.indexOf(c[0]));
+            const cardSuits = sortedCards.map(c => c[1]);
+            const isFlush = cardSuits.every((s, i, arr) => s === arr[0]);
+            const isStraight = cardValues.every((val, i) => i === 0 || val === cardValues[i - 1] + 1);
+            const isRoyal = isStraight && cardValues[0] === 8;
+            const valueCounts = {};
+            cardValues.forEach(v => { valueCounts[v] = (valueCounts[v] || 0) + 1; });
+            const counts = Object.values(valueCounts);
+            const maxCount = Math.max(...counts);
+
+            let rank = 0, high = 0;
+            if (isRoyal && isFlush) { rank = 9; high = 14; }
+            else if (isStraight && isFlush) { rank = 8; high = cardValues[4]; }
+            else if (maxCount === 4) { rank = 7; high = cardValues.find(v => valueCounts[v] === 4); }
+            else if (counts.includes(3) && counts.includes(2)) { rank = 6; high = cardValues.find(v => valueCounts[v] === 3); }
+            else if (isFlush) { rank = 5; high = cardValues[4]; }
+            else if (isStraight) { rank = 4; high = cardValues[4]; }
+            else if (maxCount === 3) { rank = 3; high = cardValues.find(v => valueCounts[v] === 3); }
+            else if (counts.filter(c => c === 2).length === 2) {
+                rank = 2;
+                let pairs = cardValues.filter(v => valueCounts[v] === 2);
+                high = Math.max(...pairs);
+            }
+            else if (maxCount === 2) {
+                rank = 1; high = cardValues.find(v => valueCounts[v] === 2);
+            } else {
+                rank = 0; high = cardValues[4];
+            }
+            return { rank, high };
+        }
+
+        function determineWinner() {
+            const playerHand = playerCards.concat(communityCards);
+            const opponentHand = opponentCards.concat(communityCards);
+            const pr = evaluateHand(playerHand);
+            const orr = evaluateHand(opponentHand);
+            if (pr.rank > orr.rank) return 'player';
+            else if (pr.rank < orr.rank) return 'opponent';
+            else {
+                if (pr.high > orr.high) return 'player';
+                else if (pr.high < orr.high) return 'opponent';
+                else return 'tie';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', startGame);
+    </script>
 </body>
+
 </html>
