@@ -1,0 +1,315 @@
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #2c3e50, #bdc3c7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #333;
+}
+
+.container {
+    width: 95%;
+    max-width: 1200px;
+}
+
+h1 {
+    text-align: center;
+    color: #fff;
+    margin-bottom: 20px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.game-area {
+    position: relative;
+    background-color: #ffffffcc;
+    backdrop-filter: blur(5px);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 700px;
+    margin-bottom: 20px;
+}
+
+.opponent-area,
+.player-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.opponent-area {
+    order: 1;
+    margin-bottom: 20px;
+}
+
+.player-area {
+    order: 3;
+    margin-top: 30px;
+}
+
+.community-cards {
+    order: 2;
+    display: flex;
+    margin: 20px 0;
+    transition: all 0.5s ease-in-out;
+}
+
+.player-cards,
+.opponent-cards,
+.community-cards {
+    display: flex;
+}
+
+/* 카드 flip 애니메이션 */
+.card {
+    width: 60px;
+    height: 80px;
+    border-radius: 5px;
+    background-color: #eee;
+    margin: 0 5px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #333;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    transition: transform 0.4s, background-color 0.4s, box-shadow 0.4s;
+    transform-style: preserve-3d;
+    cursor: default;
+}
+
+.card:hover {
+    transform: scale(1.1);
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.card.red {
+    color: #c0392b;
+}
+
+.card.black {
+    color: #2c3e50;
+}
+
+.card.back {
+    background: linear-gradient(45deg, #999, #666);
+    color: transparent;
+    font-size: 2em;
+}
+
+.card.back::before {
+    content: "◆";
+    color: #fff;
+}
+
+.chips-info {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.chips-info .tooltip {
+    position: relative;
+    cursor: help;
+    margin-left: 5px;
+}
+
+.chips-info .tooltip .tooltiptext {
+    visibility: hidden;
+    width: 180px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 6px;
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.9em;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.chips-info .tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+.action-buttons {
+    margin: 20px 0;
+    position: relative;
+}
+
+.action-buttons button {
+    padding: 10px 15px;
+    margin: 0 5px;
+    border: none;
+    background: #27ae60;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    position: relative;
+    font-size: 1em;
+    transition: background 0.3s;
+}
+
+.action-buttons button:hover {
+    background: #1e8449;
+}
+
+.action-buttons button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.action-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    bottom: 140%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150px;
+    transition: opacity 0.3s;
+    font-size: 0.9em;
+    z-index: 2;
+    line-height: 1.4em;
+}
+
+.action-buttons button:hover .action-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+.pot,
+.message-area {
+    font-size: 1.2em;
+    margin: 10px 0;
+}
+
+.stage-indicator {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.2em;
+    font-weight: bold;
+    background: #fff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: #2c3e50;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    cursor: help;
+}
+
+.stage-indicator:hover {
+    background: #f9f9f9;
+}
+
+.stage-indicator .stage-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    background-color: #333;
+    color: #fff;
+    padding: 6px;
+    border-radius: 6px;
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 180px;
+    font-size: 0.9em;
+    text-align: center;
+    transition: opacity 0.3s;
+    line-height: 1.4em;
+}
+
+.stage-indicator:hover .stage-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+.rules-area {
+    background-color: #ffffffdd;
+    backdrop-filter: blur(3px);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.rules-area h2 {
+    margin-top: 0;
+}
+
+.tooltiptext {
+    line-height: 1.4em;
+}
+
+.genie-advice {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    background: #f7f7f7aa;
+    backdrop-filter: blur(3px);
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    max-width: 200px;
+    font-size: 0.9em;
+}
+
+.genie-advice h3 {
+    margin: 0 0 5px 0;
+    font-size: 1em;
+    text-align: center;
+}
+
+.fade-in {
+    opacity: 0;
+    animation: fadein 0.8s forwards;
+}
+
+@keyframes fadein {
+    to {
+        opacity: 1;
+    }
+}
+
+/* 쇼다운 시 플레이어 패 하이라이트 */
+.highlight-rank {
+    outline: 3px solid #f1c40f;
+    outline-offset: 5px;
+    border-radius: 5px;
+    animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+    0% {
+        outline-color: #f1c40f;
+    }
+
+    100% {
+        outline-color: #f39c12;
+    }
+}
+
+/* 카드 flip 효과 */
+.flipped {
+    transform: rotateY(180deg);
+}
