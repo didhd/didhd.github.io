@@ -523,7 +523,8 @@
 
         // 몬테카를로 EV 추정 함수 (변경 없음)
         function monteCarloEV(playerC, oppC, commC, stage) {
-            let used = playerC.concat(oppC, commC);
+            // oppC는 무시하고 계산합니다
+            let used = playerC.concat(commC);
             let remainingDeck = deck.filter(c => !used.includes(c));
             let simulations = 200;
             let playerWins = 0, oppWins = 0, ties = 0;
@@ -531,6 +532,10 @@
             for (let i = 0; i < simulations; i++) {
                 let simDeck = remainingDeck.slice();
                 shuffleArray(simDeck);
+
+                // 가상의 상대 카드 2장을 뽑습니다
+                let simulatedOppCards = [simDeck.splice(0, 1)[0], simDeck.splice(0, 1)[0]];
+
                 let simCommunity = commC.slice();
                 if (stage === 'preflop') {
                     simCommunity = simCommunity.concat(simDeck.splice(0, 3));
@@ -545,7 +550,7 @@
                 // river면 이미 완성
 
                 let pr = evaluateHand(playerC.concat(simCommunity));
-                let orr = evaluateHand(oppC.concat(simCommunity));
+                let orr = evaluateHand(simulatedOppCards.concat(simCommunity));
                 if (pr.rank > orr.rank || (pr.rank === orr.rank && pr.high > orr.high)) {
                     playerWins++;
                 } else if (pr.rank < orr.rank || (pr.rank === orr.rank && pr.high < orr.high)) {
