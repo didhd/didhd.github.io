@@ -1,178 +1,570 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description"
-        content="Calculate cosine similarity between two vectors directly in your browser. Includes history of calculations.">
-    <meta name="keywords"
-        content="cosine similarity, vector calculation, online calculator, data science, SEO optimization">
-    <meta name="author" content="Your Name or Organization">
-    <title>Cosine Similarity Calculator</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>텍사스 홀덤 싱글 플레이 연습</title>
     <style>
         body {
-            padding-top: 20px;
-            padding-bottom: 40px;
-            background-color: #f5f5f5;
+            font-family: sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-
-        .form-cosine,
-        .history {
-            max-width: 900px;
-            padding: 15px;
-            margin: auto;
+        .container{
+            width: 90%;
+            max-width: 1200px;
         }
-
-        .form-cosine .form-floating,
-        .history .item {
+        .game-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            min-height: 600px;
+        }
+        .opponent-area, .player-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .opponent-area {
+            order: 1;
+            margin-bottom: 20px;
+        }
+        .player-area {
+            order: 3;
+            margin-top: 20px;
+        }
+        .community-cards {
+            order: 2;
+            margin-bottom: 20px;
+            display: flex;
+            transition: all 0.5s ease-in-out;
+        }
+        .player-cards, .opponent-cards, .community-cards {
+            display: flex;
             margin-bottom: 10px;
         }
-
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 14px;
-            color: #aaa;
-        }
-
-        textarea {
-            resize: vertical;
-        }
-
-        .history .item {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            cursor: pointer;
-            margin-bottom: 5px;
-            border: 1px solid #ddd;
-            padding: 5px;
+        .card {
+            width: 60px;
+            height: 80px;
             border-radius: 5px;
+            background-color: #ddd;
+            margin: 0 5px;
+            display: inline-block;
+            text-align: center;
+            line-height: 80px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.4s;
+        }
+        .card:hover {
+            transform: scale(1.05);
+        }
+        .card.back {
+            background-color: #999;
+            color: #fff;
+            font-size: 2em;
+            line-height: 70px;
+        }
+        .card.back::before {
+            content: "?";
+        }
+
+        .action-buttons {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .action-buttons button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border: none;
+            background-color: #5cb85c;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            position: relative;
+        }
+        .action-buttons button:hover {
+            background-color: #4cae4c;
+        }
+
+        .pot {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        .message-area {
+            min-height: 30px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .rules-area{
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 툴팁 */
+        .action-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            transition: opacity 0.3s;
+            font-size: 0.9em;
+            z-index: 2;
+        }
+        .action-buttons button:hover .action-tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* 단계 표시 */
+        .stage-indicator {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.2em;
+            color: #333;
+            background: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        /* 초보자 툴팁 */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size:0.9em;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
         }
     </style>
 </head>
-
 <body>
-    <div class="container">
-        <h1 class="text-center mb-4">Cosine Similarity Calculator</h1>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-cosine bg-white rounded shadow-sm p-3">
-                    <form id="similarityForm">
-                        <div class="form-floating mb-3">
-                            <textarea class="form-control" id="vector1" name="vector1" placeholder="Enter first vector"
-                                required style="height: 100px;"></textarea>
-                            <label for="vector1">Vector 1 (comma-separated)</label>
-                        </div>
-                        <div class="form-floating mb-3">
-                            <textarea class="form-control" id="vector2" name="vector2" placeholder="Enter second vector"
-                                required style="height: 100px;"></textarea>
-                            <label for="vector2">Vector 2 (comma-separated)</label>
-                        </div>
-                        <button type="submit" class="btn btn-lg btn-primary btn-block">Calculate</button>
-                    </form>
-                    <h3 id="result" class="mt-3"></h3>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="history bg-white rounded shadow-sm p-3">
-                    <h3>History</h3>
-                    <div id="historyContent"></div>
-                    <button id="deleteHistory" class="btn btn-danger mt-2">Delete History</button>
-                </div>
+<div class="container">
+    <h1>텍사스 홀덤 싱글 플레이 연습</h1>
+
+    <div class="game-area">
+        <div class="stage-indicator" id="stage-indicator">프리플랍</div>
+        <div class="opponent-area">
+            <h2>상대</h2>
+            <div class="opponent-cards" id="opponent-cards">
+                <div class="card back"></div>
+                <div class="card back"></div>
             </div>
         </div>
-        <div class="footer">
-            <p>Powered by JavaScript & Bootstrap</p>
+        <div class="community-cards" id="community-cards"></div>
+        <div class="player-area">
+            <h2>플레이어</h2>
+            <div class="player-cards" id="player-cards">
+                <div class="card back"></div>
+                <div class="card back"></div>
+            </div>
+            <div class="action-buttons">
+                <button onclick="check()">체크
+                    <div class="action-tooltip">추가 베팅 없이 턴을 넘깁니다.</div>
+                </button>
+                <button onclick="bet()">벳
+                    <div class="action-tooltip">베팅을 시작합니다.</div>
+                </button>
+                <button onclick="call()">콜
+                    <div class="action-tooltip">상대 베팅에 맞춥니다.</div>
+                </button>
+                <button onclick="raise()">레이즈
+                    <div class="action-tooltip">상대보다 더 높게 베팅합니다.</div>
+                </button>
+                <button onclick="fold()">폴드
+                    <div class="action-tooltip">패를 포기하고 게임에서 빠집니다.</div>
+                </button>
+            </div>
+            <div class="pot" id="pot-amount">팟: 0</div>
+            <div class="message-area" id="message-area"></div>
         </div>
     </div>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const form = document.getElementById('similarityForm');
-            form.addEventListener('submit', function (e) {
-                e.preventDefault();
-                const vector1 = document.getElementById('vector1').value.split(',').map(Number);
-                const vector2 = document.getElementById('vector2').value.split(',').map(Number);
-                if (vector1.length !== vector2.length) {
-                    alert('Error: Vectors must be of the same dimension.');
-                    return;
-                }
-                const similarity = cosineSimilarity(vector1, vector2);
-                if (similarity !== null) {
-                    document.getElementById('result').textContent = `Similarity: ${similarity.toFixed(4)}`;
-                    updateHistory(vector1, vector2, similarity);
-                    loadHistory();
-                } else {
-                    document.getElementById('result').textContent = 'Error calculating similarity.';
-                }
-            });
 
-            function cosineSimilarity(vec1, vec2) {
-                if (vec1.length !== vec2.length || vec1.length === 0) {
-                    return null;  // Ensure vectors are of the same length and not empty
-                }
-                let dot = 0, normA = 0, normB = 0;
-                for (let i = 0; i < vec1.length; i++) {
-                    if (isNaN(vec1[i]) || isNaN(vec2[i])) {
-                        return null;  // Ensure that all elements are numbers
-                    }
-                    dot += vec1[i] * vec2[i];
-                    normA += vec1[i] * vec1[i];
-                    normB += vec2[i] * vec2[i];
-                }
-                return normA !== 0 && normB !== 0 ? dot / (Math.sqrt(normA) * Math.sqrt(normB)) : 0;  // Avoid division by zero
+    <div class="rules-area">
+        <h2>기본 규칙</h2>
+        <p>
+            텍사스 홀덤은 각 플레이어가 2장의 개인 카드(<span class="tooltip">홀 카드<span class="tooltiptext">각 플레이어에게 비공개로 주어지는 2장의 카드</span></span>)를 받고, 테이블에 공개되는 5장의 공통 카드(<span class="tooltip">커뮤니티 카드<span class="tooltiptext">모든 플레이어가 공유하는 5장의 공개 카드</span></span>)를 이용해 가장 높은 족보를 만듭니다.
+        </p>
+        <p>게임 진행 순서: 프리플랍 → 플랍 → 턴 → 리버 → 쇼다운</p>
+        <ul>
+            <li class="tooltip">체크<span class="tooltiptext">추가 베팅 없이 턴을 넘김</span></li>
+            <li class="tooltip">벳<span class="tooltiptext">처음으로 베팅 시작</span></li>
+            <li class="tooltip">콜<span class="tooltiptext">상대 베팅에 맞추어 베팅</span></li>
+            <li class="tooltip">레이즈<span class="tooltiptext">상대 베팅보다 높게 베팅</span></li>
+            <li class="tooltip">폴드<span class="tooltiptext">패를 포기</span></li>
+        </ul>
+        <h2>족보 (높은 순)</h2>
+        <ul>
+            <li>로열 스트레이트 플러쉬</li>
+            <li>스트레이트 플러쉬</li>
+            <li>포카드</li>
+            <li>풀하우스</li>
+            <li>플러쉬</li>
+            <li>스트레이트</li>
+            <li>트리플</li>
+            <li>투페어</li>
+            <li>원페어</li>
+            <li>하이카드</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    let deck = [];
+    const suits = ["C", "D", "H", "S"];
+    const values = ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"];
+    let playerCards = [];
+    let opponentCards = [];
+    let communityCards = [];
+    let pot = 0;
+    let betAmount = 10;
+    let gameStage = 'preflop';
+    let gameOver = false;
+    let playerActioned = false;
+
+    function createDeck() {
+        deck = [];
+        for (let suit of suits) {
+            for (let value of values) {
+                deck.push(value + suit);
             }
+        }
+    }
 
+    function shuffleDeck() {
+        for (let i = deck.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [deck[i], deck[j]] = [deck[j], deck[i]];
+        }
+    }
 
-            function updateHistory(vec1, vec2, similarity) {
-                const history = JSON.parse(localStorage.getItem('history')) || [];
-                history.push({ vec1, vec2, similarity });
-                localStorage.setItem('history', JSON.stringify(history));
-            }
+    function dealCards() {
+        playerCards = [deck.pop(), deck.pop()];
+        opponentCards = [deck.pop(), deck.pop()];
+        communityCards = [];
+        playerActioned = false;
+        updatePlayerCardsDisplay();
+        updateOpponentCardsDisplay();
+        updateCommunityCardsDisplay();
+        updatePotDisplay();
+    }
 
-            function loadHistory() {
-                const history = JSON.parse(localStorage.getItem('history')) || [];
-                const historyElement = document.getElementById('historyContent');
-                historyElement.innerHTML = '';  // Clear existing entries
-
-                history.forEach((item, index) => {
-                    const entry = document.createElement('div');
-                    entry.className = 'item';
-                    entry.textContent = `${index + 1}. [${item.vec1.join(', ')}] and [${item.vec2.join(', ')}]`;
-                    if (item.similarity !== null && !isNaN(item.similarity)) {
-                        entry.textContent += ` - Similarity: ${item.similarity.toFixed(4)}`;
-                    } else {
-                        entry.textContent += ` - Similarity calculation error`;
-                    }
-                    entry.addEventListener('click', () => {
-                        document.getElementById('vector1').value = item.vec1.join(', ');
-                        document.getElementById('vector2').value = item.vec2.join(', ');
-                        document.getElementById('result').textContent = item.similarity !== null ? `Loaded Similarity: ${item.similarity.toFixed(4)}` : 'Error in loaded similarity';
-                    });
-                    historyElement.appendChild(entry);
-                });
-            }
-
-            const deleteHistoryButton = document.getElementById('deleteHistory');
-            deleteHistoryButton.addEventListener('click', function () {
-                localStorage.removeItem('history');  // Clear history from local storage
-                loadHistory();  // Reload the displayed history which should now be empty
-            });
-
-            loadHistory();
+    function updatePlayerCardsDisplay() {
+        const playerCardsDiv = document.getElementById('player-cards');
+        playerCardsDiv.innerHTML = '';
+        playerCards.forEach(card => {
+            const cardDiv = document.createElement('div');
+            cardDiv.classList.add('card');
+            cardDiv.textContent = card;
+            playerCardsDiv.appendChild(cardDiv);
         });
-    </script>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7TSSV1QQXZ"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
+    }
 
-        gtag('config', 'G-7TSSV1QQXZ');
-    </script>
+    function updateOpponentCardsDisplay() {
+        const opponentCardsDiv = document.getElementById('opponent-cards');
+        opponentCardsDiv.innerHTML = '';
+        if (gameOver){
+            opponentCards.forEach(card => {
+                const cardDiv = document.createElement('div');
+                cardDiv.classList.add('card');
+                cardDiv.textContent = card;
+                opponentCardsDiv.appendChild(cardDiv);
+            });
+        }else{
+            opponentCardsDiv.innerHTML = `
+                <div class="card back"></div>
+                <div class="card back"></div>`;
+        }
+    }
+
+    function updateCommunityCardsDisplay() {
+        const communityCardsDiv = document.getElementById('community-cards');
+        communityCardsDiv.innerHTML = '';
+        // 커뮤니티 카드가 깔릴 때 애니메이션을 위해 딜레이 적용
+        communityCards.forEach((card, index) => {
+            setTimeout(()=> {
+                const cardDiv = document.createElement('div');
+                cardDiv.classList.add('card');
+                cardDiv.textContent = card;
+                communityCardsDiv.appendChild(cardDiv);
+            }, index * 300);
+        });
+        // 남은 카드 자리를 빈칸으로
+        setTimeout(()=>{
+            while(communityCardsDiv.children.length < 5) {
+                const cardDiv = document.createElement('div');
+                cardDiv.classList.add('card');
+                communityCardsDiv.appendChild(cardDiv);
+            }
+        }, communityCards.length * 300);
+    }
+
+    function updatePotDisplay() {
+        document.getElementById('pot-amount').textContent = `팟: ${pot}`;
+    }
+
+    function updateStageIndicator() {
+        const stageIndicator = document.getElementById('stage-indicator');
+        switch(gameStage) {
+            case 'preflop': stageIndicator.textContent = '프리플랍'; break;
+            case 'flop': stageIndicator.textContent = '플랍'; break;
+            case 'turn': stageIndicator.textContent = '턴'; break;
+            case 'river': stageIndicator.textContent = '리버'; break;
+            default: stageIndicator.textContent = '';
+        }
+    }
+
+    function setMessage(message) {
+        document.getElementById('message-area').textContent = message;
+    }
+
+    function check() {
+        if(playerActioned){
+            setMessage('이미 액션을 했습니다');
+            return;
+        }
+        setMessage('체크했습니다.');
+        playerActioned = true;
+        setTimeout(()=>{
+            opponentAction();
+            if (!gameOver) {
+                nextStage();
+            }
+        }, 700);
+    }
+
+    function bet() {
+        if(playerActioned){
+            setMessage('이미 액션을 했습니다');
+            return;
+        }
+        pot += betAmount;
+        updatePotDisplay();
+        setMessage(`베팅 ${betAmount} 칩`);
+        playerActioned = true;
+        setTimeout(()=>{
+            opponentAction();
+            if (!gameOver){
+                nextStage();
+            }
+        }, 700);
+    }
+
+    function call() {
+        if(playerActioned){
+            setMessage('이미 액션을 했습니다');
+            return;
+        }
+        pot += betAmount;
+        updatePotDisplay();
+        setMessage(`콜 ${betAmount} 칩`);
+        playerActioned = true;
+        setTimeout(()=>{
+            opponentAction();
+            if (!gameOver){
+                nextStage();
+            }
+        },700);
+    }
+
+    function raise() {
+        if(playerActioned){
+            setMessage('이미 액션을 했습니다');
+            return;
+        }
+        pot += betAmount * 2;
+        updatePotDisplay();
+        setMessage(`레이즈 ${betAmount * 2} 칩`);
+        playerActioned = true;
+        setTimeout(()=>{
+            opponentAction();
+            if (!gameOver){
+                nextStage();
+            }
+        },700);
+    }
+
+    function fold() {
+        setMessage('폴드했습니다. 상대방 승리!');
+        gameOver = true;
+        playerCards = [];
+        communityCards = [];
+        gameStage = 'preflop';
+        updateOpponentCardsDisplay();
+        setTimeout(startGame, 3000);
+    }
+
+    function opponentAction() {
+        if(gameOver) return;
+        // 스테이지별로 상대의 액션 패턴 약간 변경
+        let randomNumber = Math.random();
+        if (gameStage === 'preflop') {
+            randomNumber += 0.1; 
+        }
+
+        if (randomNumber < 0.05) {
+            setMessage('상대방 폴드');
+            gameOver = true;
+            determineWinner();
+            return;
+        } else if (randomNumber < 0.5) {
+            setMessage('상대방 체크');
+        } else if(randomNumber < 0.75) {
+            pot += betAmount;
+            updatePotDisplay();
+            setMessage('상대방 콜');
+        } else {
+            pot += betAmount * 2;
+            updatePotDisplay();
+            setMessage('상대방 레이즈');
+        }
+    }
+
+    function nextStage() {
+        if (gameStage === 'preflop') {
+            // 플랍: 커뮤니티 카드 3장
+            communityCards = [deck.pop(), deck.pop(), deck.pop()];
+            gameStage = 'flop';
+        } else if (gameStage === 'flop') {
+            // 턴: 커뮤니티 카드 1장 추가
+            communityCards.push(deck.pop());
+            gameStage = 'turn';
+        } else if (gameStage === 'turn') {
+            // 리버: 커뮤니티 카드 1장 추가
+            communityCards.push(deck.pop());
+            gameStage = 'river';
+        } else if (gameStage === 'river') {
+            // 쇼다운
+            gameOver = true;
+            determineWinner();
+            return;
+        }
+
+        updateCommunityCardsDisplay();
+        updateOpponentCardsDisplay();
+        updateStageIndicator();
+        playerActioned = false;
+    }
+
+    function evaluateHand(cards) {
+        // 간단한 평가 로직(원본의 평가 함수 그대로 사용)
+        const sortedCards = cards.slice().sort((a, b) => {
+            const valueA = values.indexOf(a[0]);
+            const valueB = values.indexOf(b[0]);
+            return valueA - valueB;
+        });
+        const cardValues = sortedCards.map(card => values.indexOf(card[0]));
+        const cardSuits = sortedCards.map(card => card[1]);
+        const isFlush = cardSuits.every((suit, _, arr) => suit === arr[0]);
+        const isStraight = cardValues.every((value, i) => i === 0 || value === cardValues[i - 1] + 1);
+        const isRoyal = isStraight && cardValues[0] === 8;
+        const valueCounts = {};
+        cardValues.forEach(value => {
+            valueCounts[value] = (valueCounts[value] || 0) + 1;
+        });
+        const counts = Object.values(valueCounts);
+        const maxCount = Math.max(...counts);
+
+        if (isRoyal && isFlush) return {rank: 9, highCard: 0};
+        if (isStraight && isFlush) return {rank: 8, highCard: cardValues[4]};
+        if (maxCount === 4) return {rank: 7, highCard: cardValues.find(v => valueCounts[v]===4)};
+        if (counts.includes(3) && counts.includes(2)) return {rank: 6, highCard: cardValues.find(v => valueCounts[v]===3)};
+        if (isFlush) return {rank: 5, highCard: cardValues[4]};
+        if (isStraight) return {rank: 4, highCard: cardValues[4]};
+        if (maxCount === 3) return {rank: 3, highCard: cardValues.find(v => valueCounts[v]===3)};
+        if (counts.filter(c => c===2).length === 2) {
+            const pairValues = cardValues.filter(v => valueCounts[v]===2);
+            return {rank: 2, highCard: Math.max(...pairValues)};
+        }
+        if (maxCount === 2) return {rank: 1, highCard: cardValues.find(v => valueCounts[v]===2)};
+        return {rank: 0, highCard: cardValues[4]};
+    }
+
+    function determineWinner() {
+        if (!gameOver) return;
+        const playerHand = playerCards.concat(communityCards);
+        const opponentHand = opponentCards.concat(communityCards);
+        const playerRank = evaluateHand(playerHand);
+        const opponentRank = evaluateHand(opponentHand);
+        let result = '';
+        if (playerRank.rank > opponentRank.rank) {
+            result = '플레이어 승리!';
+        } else if (playerRank.rank < opponentRank.rank) {
+            result = '상대방 승리!';
+        } else {
+            if(playerRank.highCard > opponentRank.highCard){
+                result = '플레이어 승리!';
+            } else if(playerRank.highCard < opponentRank.highCard){
+                result = '상대방 승리!';
+            } else {
+                result = '무승부!';
+            }
+        }
+        setMessage(result);
+        updateOpponentCardsDisplay();
+        setTimeout(startGame, 3000);
+    }
+
+    function startGame() {
+        createDeck();
+        shuffleDeck();
+        dealCards();
+        // 간단한 블라인드 설정 (예: SB: 5, BB: 10)
+        pot = 0;
+        pot += 15; 
+        setMessage('새 게임 시작! (SB:5, BB:10)');
+        gameStage = 'preflop';
+        gameOver = false;
+        updatePotDisplay();
+        updateStageIndicator();
+    }
+
+    startGame();
+</script>
 </body>
-
 </html>
